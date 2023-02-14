@@ -18,8 +18,8 @@ except:
 tracker_port = 2000 # porta do tracker
 peer_port = randint(2001, 9999) # porta desse peer
 id = 0 # ID do peer
-contact_list = {} # Lista de contatos desse peer
-name = "" # Nome buscado
+file_list = [] # Lista de arquivos desse peer
+file_name = "" # Nome do arquivo buscado
 
 print(f"PAR DA REDE")
 print(f"IP: {peer_ip} PORT: {peer_port}")
@@ -61,7 +61,7 @@ def decodeToDownload(name_file, binario=""):
     try:
         file = open('files/' + name_file, 'wb+')
         
-        file.write(binario)
+        file.write(binario.encode("utf-8"))
 
         file.close()
     except IOError as exc:
@@ -69,14 +69,15 @@ def decodeToDownload(name_file, binario=""):
     
     lock.release()
 
-    print("Baiixado com sucesso")
+    print("Baixado com sucesso")
 
 
 def peer():
     global id
     global connect_to
     global clt
-    global contact_list
+    global file_list
+    global file_name
 
     while True:
         # Aceita conexão pelo lado servidor
@@ -137,13 +138,14 @@ def peer():
                         
                         # O contato buscado foi encontrado e é adicionado na agenda
                         elif data2 == "FINDED":
-                            print(f"Contato encontrado: {data3}")
-                            contact_list[name] = data3
+                            print(f"Arquivo encontrado")
+                            decodeToDownload(data3)
+                            file_list.append(file_name)
                 
                 # Caso a mensagem recebida for de busca
                 elif data1 == "SC":
                         # Se eu tiver o contato, envia para o peer que pediu
-                        if data3 in contact_list:
+                        if data3 in file_list:
                             data = encodeToUpload(data3)
                             clt.send(f"{data2};FINDED;{data}|".encode("utf-8"))
                         else:
@@ -160,12 +162,13 @@ def peer():
 def user_commands():
     global clt
     global name
+    global file_list
     valid_commands = [1, 2, 3, 4, 5]
 
     while True:
         print("\nLISTA TELEFONICA")
-        print("1 - Adicionar arquivo") # Mudar para lista de arquivos
-        print("2 - Listar meus contatos") # ler oq tem na pasta
+        print("1 - Adicionar arquivo")
+        print("2 - Listar meus aquivos")
         print("3 - Buscar arquivo")
         print("4 - Meu ID")
         print("5 - Sair da rede")
@@ -183,22 +186,20 @@ def user_commands():
             continue
 
         if ipt == 1:
-            name = input("Nome: ")
-            number = input("Número: ")
+            file_name = input("Nome do arquivo: ")
 
-            contact_list[name] = number
-            print("\nContato salvo")
+            file_list.append(file_name)
+            print("\nArquivo salvo na lista")
         
         elif ipt == 2:
-            print(contact_list)
-        
+            print(file_list)
         elif ipt == 3:
-            name = input("Digite o nome do arquivo: ")
+            file_name = input("Digite o nome do arquivo: ")
             
-            if name in contact_list:
-                print(contact_list[name])
+            if file_name in file_list:
+                print("Você já tem esse arquivo.")
             else:
-                clt.send(f"SC;P{id};{name}".encode("utf-8"))
+                clt.send(f"SC;P{id};{file_name}".encode("utf-8"))
                 sleep(2)
         
         elif ipt == 4:
