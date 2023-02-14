@@ -1,4 +1,5 @@
 import socket
+import threading
 from threading import Thread, Lock
 import os
 from random import randint
@@ -38,7 +39,7 @@ clt.connect((tracker_ip, tracker_port))
 clt.send(f"ID;{peer_ip};{peer_port}".encode("utf-8"))
 
 def encodeToUpload(nome_do_arquivo):
-    name_file = 'files/' + nome_do_arquivo
+    name_file = nome_do_arquivo
     md = os.stat(name_file)
 
     lock = Lock()
@@ -46,22 +47,22 @@ def encodeToUpload(nome_do_arquivo):
     with lock:
         try:
             file = open(name_file, 'rb')
-            data_out = bytes(file.read())
+            data_out = file.read()
             file.close()
         except IOError as exc:
             logging.error(exc)
             return
 
-    return str(data_out)
+    return data_out
 
 def decodeToDownload(name_file, binario=""):
-    lock = Lock()
+    lock = threading.Lock()
     lock.acquire()
     
     try:
-        file = open('files/' + name_file, 'wb+')
-        
-        file.write(binario.encode("utf-8"))
+        file = open(name_file, 'w+')
+        corte = binario[2:-1]
+        file.write(corte)
 
         file.close()
     except IOError as exc:
@@ -139,15 +140,16 @@ def peer():
                         # O contato buscado foi encontrado e é adicionado na agenda
                         elif data2 == "FINDED":
                             print(f"Arquivo encontrado")
-                            decodeToDownload(data3)
+                            print(f"{command}")
+                            decodeToDownload(file_name, data3)
                             file_list.append(file_name)
                 
                 # Caso a mensagem recebida for de busca
                 elif data1 == "SC":
                         # Se eu tiver o contato, envia para o peer que pediu
                         if data3 in file_list:
-                            data = encodeToUpload(data3)
-                            clt.send(f"{data2};FINDED;{data}|".encode("utf-8"))
+                            datatt = encodeToUpload(data3)
+                            clt.send(f"{data2};FINDED;{datatt}|".encode("utf-8"))
                         else:
                             if data2 == f"P{id}":
                                 print("arquivo não encontrado")
@@ -163,6 +165,7 @@ def user_commands():
     global clt
     global name
     global file_list
+    global file_name
     valid_commands = [1, 2, 3, 4, 5]
 
     while True:

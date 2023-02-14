@@ -38,7 +38,7 @@ clt.connect((tracker_ip, tracker_port))
 clt.send(f"ID;{peer_ip};{peer_port}".encode("utf-8"))
 
 def encodeToUpload(nome_do_arquivo):
-    name_file = 'files/' + nome_do_arquivo
+    name_file = nome_do_arquivo
     md = os.stat(name_file)
 
     lock = Lock()
@@ -59,7 +59,7 @@ def decodeToDownload(name_file, binario=""):
     lock.acquire()
     
     try:
-        file = open('files/' + name_file, 'wb+')
+        file = open(name_file, 'wb+')
         
         file.write(binario.encode("utf-8"))
 
@@ -139,7 +139,7 @@ def peer():
                         # O contato buscado foi encontrado e é adicionado na agenda
                         elif data2 == "FINDED":
                             print(f"Arquivo encontrado")
-                            decodeToDownload(data3)
+                            decodeToDownload(file_name, data3)
                             file_list.append(file_name)
                 
                 # Caso a mensagem recebida for de busca
