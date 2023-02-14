@@ -1,29 +1,24 @@
-import os
 import socket
 from threading import Thread
+import os
 from random import randint
 from time import sleep
 
-
-# Endereço desse peer
-
+# Endereço IP desse peer
 try:
-    addr_ip = [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close())
+    peer_ip = [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close())
                for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
 except:
-    print("sgsgsd")
+    enter = input("Erro ao tentar obter o endereço IP. Digite enter para sair.")
+    os._exit(0)
 
-peer_ip = addr_ip
-peer_port = randint(2001, 9999)
+tracker_port = 2000 # porta do tracker
+peer_port = randint(2001, 9999) # porta desse peer
+id = 0 # ID do peer
+contact_list = {} # Lista de contatos desse peer
+name = "" # Nome buscado
 
-tracker_port = 2000
-
-# ID do peer
-id = 0
-# Lista de contatos desse peer
-contact_list = {}
-name = ""
-
+print(f"PAR DA REDE")
 print(f"IP: {peer_ip} PORT: {peer_port}")
 
 tracker_ip = input("Digite o endereço ip do super nó: ")
@@ -62,51 +57,54 @@ def peer():
             for command in commands.split("|"):
                 if command == "":
                     continue
-
-                print(f"Comando recebido pelo peer: {command}")
                 
                 # data1 = Destino | data2 = Comando | data3 = Informação personalizada
                 data1, data2, data3 = command.split(";")
 
-                # ID de quanto entra na rede, mas pode mudar depois
+                # Caso a mensagem seja para o novo peer
                 if (data1 == "ID"):
                     if id == 0:
                         id = data3
                     else:
                         clt.send(f"{command}|".encode("utf-8"))
 
-                # Caso a mesagem recebida for para um peer. Se for para esse peer,
-                # executa o comando, se não, repassa para o proximo peer
+                # Caso a mesagem recebida for para um peer
                 elif data1[0] == f"P":
+                    # Se o peer não for o destino, repassa a mensagem
                     if data1 != f"P{id}":
                         clt.send(f"{command}|".encode("utf-8"))
 
+                    # Se o peer for o destino, executa o comando
                     elif data1 == f"P{id}":
-                        # Atualiza a conexao do lado cliente
+                        # Fecha a conexão com o peer anterior e conecta com o novo
                         if data2 == "CONNECT_WITH":
+                            # Fecha conexão
                             clt.close()
+                            
+                            # Converte de string para tupla
+                            con_tuple = data3.split(",")
+                            ip_addr = con_tuple[0][2:-1]
+                            port_addr = int(con_tuple[1][1:-1])
 
-                            debug1 = data3.split(",")
-                            debug2 = debug1[0][2:-1]
-                            debug3 = int(debug1[1][1:-1])
-
-                            connect_to = (debug2, debug3)
-                            print(f"Conectando com {connect_to}")
+                            # Abre nova conexão
+                            connect_to = (ip_addr, port_addr)
                             clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                             clt.connect(connect_to)
 
                         # Recebe um novo id e manda o proximo peer atualizar também
-                        if data2 == "NEW_ID":
+                        elif data2 == "NEW_ID":
                             id = int(data3)
                             data3 = id + 1
                             clt.send(f"P{int(data1[1])+1};{data2};{data3}|".encode("utf-8"))
                         
-                        if data2 == "FINDED":
+                        # O contato buscado foi encontrado e é adicionado na agenda
+                        elif data2 == "FINDED":
                             print(f"Contato encontrado: {data3}")
                             contact_list[name] = data3
                 
                 # Caso a mensagem recebida for de busca
                 elif data1 == "SC":
+                        # Se eu tiver o contato, envia para o peer que pediu
                         if data3 in contact_list:
                             clt.send(f"{data2};FINDED;{contact_list[data3]}|".encode("utf-8"))
                         else:
@@ -123,29 +121,39 @@ def peer():
 def user_commands():
     global clt
     global name
+    valid_commands = [1, 2, 3, 4, 5]
 
     while True:
         print("\nLISTA TELEFONICA")
         print("1 - Adicionar contato")
-        print("2 - Listar contatos")
+        print("2 - Listar meus contatos")
         print("3 - Buscar contato")
         print("4 - Meu ID")
-        print("5 - Meus pares")
-        print("6 - Sair da rede")
+        print("5 - Sair da rede")
         
-        command = int(input("\nDigite o comando: "))
+        ipt = input("\nDigite o comando: ")
 
-        if command == 1:
+        try:
+            ipt = int(ipt)
+        except:
+            print("Digite um comando válido")
+            continue
+
+        if (ipt not in valid_commands):
+            print("Digite um comando válido")
+            continue
+
+        if ipt == 1:
             name = input("Nome: ")
             number = input("Número: ")
 
             contact_list[name] = number
             print("\nContato salvo")
         
-        if command == 2:
+        elif ipt == 2:
             print(contact_list)
         
-        if command == 3:
+        elif ipt == 3:
             name = input("Nome: ")
             
             if name in contact_list:
@@ -154,16 +162,16 @@ def user_commands():
                 clt.send(f"SC;P{id};{name}".encode("utf-8"))
                 sleep(2)
         
-        if command == 4:
+        elif ipt == 4:
             print(id)
         
-        if command == 5:
-            print(connect_to)
-        if command == 6:
+        elif ipt == 5:
             clt.send(f"TK;REMOVE_FROM_LIST;P{id}".encode("utf-8"))
+
             clt.close()
             svr.close()
-            print("program closed")
+            
+            print("programa fechado")
             os._exit(0)
 
 Thread(target=peer).start()

@@ -1,25 +1,25 @@
 import socket
 from threading import Thread
+import os
 
 # endereço que o tracker vai se conectar
 connect_to = None
 
 # Endereço do tracker
-
 try:
-    addr_ip = [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close())
+    host = [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close())
                for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
 except:
-    print("sgsgsd")
+    enter = input("Erro ao tentar obter o endereço IP. Digite enter para sair.")
+    os._exit(0)
 
-
-host = addr_ip
 port = 2000
 
 # lista de peers conectados
-peers_list = [(host, 2000)]
+peers_list = [(host, port)]
 
-print(f"HOST: {host} PORT: {port}")
+print("SUPER NÓ DA REDE")
+print(f"IP: {host} PORT: {port}")
 
 # Socket cliente
 clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -63,7 +63,6 @@ def tracker():
                 # Novo peer entra na rede e pede para receber identificação
                 if(data1 == "ID"):
                     peers_list.append((adr[0], int(data3)))
-                    print(peers_list)
 
                     # Se for o primeiro peer da rede, tracker se conecta com ele
                     if(len(peers_list) == 2):
@@ -105,6 +104,7 @@ def tracker():
                             peers_list.pop(-1)
 
                             clt.send(f"P{len(peers_list) - 1};CONNECT_WITH;{peers_list[0]}|".encode("utf-8"))
+                        
                         # Caso o peer que saiu não seja nem o primeiro nem o ultimo da rede
                         elif data3[1] != "1":
                             #numero do peer que saiu
@@ -115,6 +115,7 @@ def tracker():
 
                             clt.send(f"P{before_number};CONNECT_WITH;{peers_list[quit_number]}|".encode("utf-8"))
                             clt.send(f"P{quit_number + 1};NEW_ID;{quit_number}|".encode("utf-8"))
+                        
                         # Caso o peer que saiu seja o primeiro da rede
                         elif data3[1] == "1":
                             peers_list.pop(1)
@@ -123,7 +124,8 @@ def tracker():
 
                             clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                             clt.connect(connect_to)
-                            print("Conectado com o novo par")
+                            
+                            print(f"Tracker conectado com o novo par: {connect_to}")
                             clt.send(f"P2;NEW_ID;1|".encode("utf-8"))
                 
                 # Mensagem de busca de contato nas lista telefonicas
