@@ -40,7 +40,6 @@ clt.send(f"ID;{peer_ip};{peer_port}".encode("utf-8"))
 
 def encodeToUpload(nome_do_arquivo):
     name_file = nome_do_arquivo
-    md = os.stat(name_file)
 
     lock = Lock()
 
