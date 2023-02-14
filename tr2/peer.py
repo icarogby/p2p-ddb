@@ -139,7 +139,7 @@ def peer():
                         # O contato buscado foi encontrado e é adicionado na agenda
                         elif data2 == "FINDED":
                             print(f"Arquivo encontrado")
-                            decodeToDownload(file_name, data3)
+                            decodeToDownload(data3)
                             file_list.append(file_name)
                 
                 # Caso a mensagem recebida for de busca
