@@ -6,14 +6,9 @@ import os
 connect_to = None
 
 # Endereço do tracker
-try:
-    host = [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close())
-               for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
-except:
-    enter = input("Erro ao tentar obter o endereço IP. Digite enter para sair.")
-    os._exit(0)
+host = "localhost"
 
-port = 2000
+port = 9902
 
 # lista de peers conectados
 peers_list = [(host, port)]
