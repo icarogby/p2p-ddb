@@ -21,12 +21,12 @@ searchedName = "" # Name searched by the user
 connectTo = (trackerIp, trackerPort) # First connection is with the tracker
 
 # Server socket
-svr = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+svr = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 svr.bind((peerIp, peerPort))
 svr.listen(5)
 
 # Client socket
-clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+clt = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 clt.connect(connectTo)
 
 # Send the peer's IP and port to the tracker

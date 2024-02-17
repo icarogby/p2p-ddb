@@ -22,10 +22,10 @@ print("SUPER NÓ DA REDE")
 print(f"IP: {host} PORT: {port}")
 
 # Socket cliente
-clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+clt = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 
 # Socket servidor
-svr = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+svr = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 svr.bind((host, port))
 svr.listen(5)
 
