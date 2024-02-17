@@ -1,59 +1,57 @@
 import socket
 from threading import Thread
 import os
-from random import randint
 from time import sleep
 
-# Endereço IP desse peer
-try:
-    peer_ip = [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close())
-               for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
-except:
-    enter = input("Erro ao tentar obter o endereço IP. Digite enter para sair.")
-    os._exit(0)
+PEER_PORT = 9902
+TRACKER_PORT = 9902
 
-tracker_port = 2000 # porta do tracker
-peer_port = randint(2001, 9999) # porta desse peer
-id = 0 # ID do peer
-contact_list = {} # Lista de contatos desse peer
-name = "" # Nome buscado
+# Peer IP address
+peerIp = socket.gethostbyname(socket.gethostname())
+peerPort = PEER_PORT
 
-print(f"PAR DA REDE")
-print(f"IP: {peer_ip} PORT: {peer_port}")
+# Tracker IP address
+trackerIp = input("Write the tracker's IP address:")
+trackerPort = TRACKER_PORT
 
-tracker_ip = input("Digite o endereço ip do super nó: ")
-connect_to = (tracker_ip, tracker_port)
+# Global variables
+id = 0 # Peer ID
+contactList = {} #TODO Save on DB
+searchedName = "" # Name searched by the user
+connectTo = (trackerIp, trackerPort) # First connection is with the tracker
 
-# Socket servidor
+# Server socket
 svr = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-svr.bind((peer_ip, peer_port))
+svr.bind((peerIp, peerPort))
 svr.listen(5)
 
-# Socket cliente ja envia mensagem de identificação
+# Client socket
 clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-clt.connect((tracker_ip, tracker_port))
-clt.send(f"ID;{peer_ip};{peer_port}".encode("utf-8"))
+clt.connect(connectTo)
+
+# Send the peer's IP and port to the tracker
+clt.send(f"ID;{peerIp};{peerPort}".encode("utf-8")) #TODO chance protocol
 
 def peer():
     global id
-    global connect_to
-    global clt
-    global contact_list
+    global connectTo
+    global svr, clt
+    global contactList
 
     while True:
-        # Aceita conexão pelo lado servidor
-        con, adr = svr.accept()
+        # Accept connection from the server side
+        con, _ = svr.accept()
 
         while True:
-            #recebe a mensagem do peer anterior ou tracker
+            # Receive data from the server
             data = con.recv(1024)
             commands = data.decode("utf-8")
 
-            # Se uma conexão for fechada, sai do loop e espera uma nova conexão
+            # If the connection is loss, break the loop and waits for a new connection
             if not data:
                 break
             
-            # Separa e executa os comandos
+            #TODO chance protocol
             for command in commands.split("|"):
                 if command == "":
                     continue
@@ -66,7 +64,7 @@ def peer():
                     if id == 0:
                         id = data3
                     else:
-                        clt.send(f"{command}|".encode("utf-8"))
+                        clt.send(f"{command}|".encode("utf-8")) # Envia a mensagem para frente
 
                 # Caso a mesagem recebida for para um peer
                 elif data1[0] == f"P":
@@ -100,13 +98,13 @@ def peer():
                         # O contato buscado foi encontrado e é adicionado na agenda
                         elif data2 == "FINDED":
                             print(f"Contato encontrado: {data3}")
-                            contact_list[name] = data3
+                            contactList[name] = data3
                 
                 # Caso a mensagem recebida for de busca
                 elif data1 == "SC":
                         # Se eu tiver o contato, envia para o peer que pediu
-                        if data3 in contact_list:
-                            clt.send(f"{data2};FINDED;{contact_list[data3]}|".encode("utf-8"))
+                        if data3 in contactList:
+                            clt.send(f"{data2};FINDED;{contactList[data3]}|".encode("utf-8"))
                         else:
                             if data2 == f"P{id}":
                                 print("Contato não encontrado")
@@ -147,17 +145,17 @@ def user_commands():
             name = input("Nome: ")
             number = input("Número: ")
 
-            contact_list[name] = number
+            contactList[name] = number
             print("\nContato salvo")
         
         elif ipt == 2:
-            print(contact_list)
+            print(contactList)
         
         elif ipt == 3:
             name = input("Nome: ")
             
-            if name in contact_list:
-                print(contact_list[name])
+            if name in contactList:
+                print(contactList[name])
             else:
                 clt.send(f"SC;P{id};{name}".encode("utf-8"))
                 sleep(2)
