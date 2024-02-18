@@ -79,7 +79,7 @@ def tracker():
                         # Comando para antigo ultimo par, conecte-se com o novo ultimo par
                         clt.send(f"P{old_final_peer_number};CONNECT_WITH;{peers_list[-1]}|".encode("utf-8"))
 
-                        sleep(5)
+                        sleep(2)
 
                         print(f"ID;NEW_ID;{len(peers_list) - 1}|")
                         # Novo ultimo par, esse é seu id

@@ -12,13 +12,13 @@ print(f"IP: {peerIp}")
 peerPort = PEER_PORT
 
 # Tracker IP address
-trackerIp = "2804:25ac:40e:8b00:a13b:e094:9f58:820b"
+trackerIp = "2804:214:8760:7f92:115a:5ae4:c2fa:6c61"
 trackerPort = TRACKER_PORT
 
 # Global variables
 id = 0 # Peer ID
 contactList = {} #TODO Save on DB
-searchedName = "" # Name searched by the user
+name = "" # Name searched by the user
 connectTo = (trackerIp, trackerPort) # First connection is with the tracker
 
 # Server socket
@@ -100,8 +100,8 @@ def peer():
                         
                         # O contato buscado foi encontrado e é adicionado na agenda
                         elif data2 == "FINDED":
-                            print(f"Contato {contactList[searchedName]} encontrado. Número: {data3}")
-                            contactList[searchedName] = data3
+                            print(f"Contato {contactList[name]} encontrado. Número: {data3}")
+                            contactList[name] = data3
                 
                 # Caso a mensagem recebida for de busca
                 elif data1 == "SC":
