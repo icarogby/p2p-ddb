@@ -7,7 +7,7 @@ import os
 connect_to = None
 
 # Endereço do tracker
-host = '2804:25ac:40e:8b00:a13b:e094:9f58:820b'
+host = socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET6)[2][4][0]
 port = 9902
 
 # lista de peers conectados

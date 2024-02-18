@@ -7,7 +7,7 @@ PEER_PORT = 9902
 TRACKER_PORT = 9902
 
 # Peer IP address
-peerIp = socket.gethostbyname(socket.gethostname()) #!MUDAR AQ
+peerIp = socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET6)[2][4][0] #!MUDAR AQ
 peerPort = PEER_PORT
 
 # Tracker IP address
