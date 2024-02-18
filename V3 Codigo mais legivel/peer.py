@@ -100,7 +100,7 @@ def peer():
                         
                         # O contato buscado foi encontrado e é adicionado na agenda
                         elif data2 == "FINDED":
-                            print(f"Contato {contactList[name]} encontrado. Número: {data3}")
+                            print(f"Contato {name} encontrado. Número: {data3}")
                             contactList[name] = data3
                 
                 # Caso a mensagem recebida for de busca
