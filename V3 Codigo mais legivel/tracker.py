@@ -2,12 +2,12 @@ import socket
 from threading import Thread
 import os
 
+
 # endereço que o tracker vai se conectar
 connect_to = None
 
 # Endereço do tracker
-host = "localhost"
-
+host = "22804:25ac:40e:8b00:a13b:e094:9f58:820b"
 port = 9902
 
 # lista de peers conectados
