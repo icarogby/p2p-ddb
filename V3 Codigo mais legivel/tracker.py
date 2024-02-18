@@ -7,7 +7,7 @@ import os
 connect_to = None
 
 # Endereço do tracker
-host = "22804:25ac:40e:8b00:a13b:e094:9f58:820b"
+host = '2804:25ac:40e:8b00:a13b:e094:9f58:820b'
 port = 9902
 
 # lista de peers conectados
@@ -57,7 +57,8 @@ def tracker():
 
                 # Novo peer entra na rede e pede para receber identificação
                 if(data1 == "ID"):
-                    peers_list.append((adr[0], int(data3)))
+                    peers_list.append((data2, int(data3)))
+                    print(f"Novo par conectado: {data2}:{data3}")
 
                     # Se for o primeiro peer da rede, tracker se conecta com ele
                     if(len(peers_list) == 2):
@@ -66,7 +67,7 @@ def tracker():
                         try:
                             clt.connect(connect_to)
                         except:
-                            clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            clt = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                             clt.connect(connect_to)
                         
                         clt.send(f"ID;NEW_ID;{len(peers_list) - 1}|".encode("utf-8"))
@@ -117,7 +118,7 @@ def tracker():
                             clt.close()
                             connect_to = peers_list[1]
 
-                            clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            clt = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                             clt.connect(connect_to)
                             
                             print(f"Tracker conectado com o novo par: {connect_to}")
