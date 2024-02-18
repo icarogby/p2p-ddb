@@ -8,10 +8,11 @@ TRACKER_PORT = 9902
 
 # Peer IP address
 peerIp = socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET6)[2][4][0] #!MUDAR AQ
+print(f"IP: {peerIp}")
 peerPort = PEER_PORT
 
 # Tracker IP address
-trackerIp = input("Write the tracker's IP address:")
+trackerIp = "2804:25ac:40e:8b00:a13b:e094:9f58:820b"
 trackerPort = TRACKER_PORT
 
 # Global variables
@@ -55,6 +56,8 @@ def peer():
             for command in commands.split("|"):
                 if command == "":
                     continue
+
+                print(f"Comando recebido pelo traker: {command}")
                 
                 # data1 = Destino | data2 = Comando | data3 = Informação personalizada
                 data1, data2, data3 = command.split(";")
@@ -86,7 +89,7 @@ def peer():
 
                             # Abre nova conexão
                             connect_to = (ip_addr, port_addr)
-                            clt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            clt = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                             clt.connect(connect_to)
 
                         # Recebe um novo id e manda o proximo peer atualizar também
@@ -97,8 +100,8 @@ def peer():
                         
                         # O contato buscado foi encontrado e é adicionado na agenda
                         elif data2 == "FINDED":
-                            print(f"Contato encontrado: {data3}")
-                            contactList[name] = data3
+                            print(f"Contato {contactList[searchedName]} encontrado. Número: {data3}")
+                            contactList[searchedName] = data3
                 
                 # Caso a mensagem recebida for de busca
                 elif data1 == "SC":
@@ -128,6 +131,7 @@ def user_commands():
         print("3 - Buscar contato")
         print("4 - Meu ID")
         print("5 - Sair da rede")
+        print("6 - Minha conexão")
         
         ipt = input("\nDigite o comando: ")
 
@@ -149,7 +153,8 @@ def user_commands():
             print("\nContato salvo")
         
         elif ipt == 2:
-            print(contactList)
+            for nome, numero in contactList.items():
+                print(f"{nome}: {numero}")
         
         elif ipt == 3:
             name = input("Nome: ")
@@ -171,6 +176,9 @@ def user_commands():
             
             print("programa fechado")
             os._exit(0)
+
+        elif ipt == 6:
+            print(f"Conectado com: {connectTo[0]}:{connectTo[1]}")
 
 Thread(target=peer).start()
 Thread(target=user_commands).start()

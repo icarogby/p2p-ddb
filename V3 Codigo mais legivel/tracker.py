@@ -1,7 +1,7 @@
 import socket
 from threading import Thread
 import os
-
+from time import sleep
 
 # endereço que o tracker vai se conectar
 connect_to = None
@@ -64,21 +64,24 @@ def tracker():
                     if(len(peers_list) == 2):
                         connect_to = peers_list[1]
                         
-                        try:
-                            clt.connect(connect_to)
-                        except:
-                            clt = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-                            clt.connect(connect_to)
+                        clt = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+                        print(f"Tracker tentando conectar com o novo par: {connect_to}")
+                        clt.connect(connect_to)
                         
+                        print(f"ID;NEW_ID;{len(peers_list) - 1}|")
                         clt.send(f"ID;NEW_ID;{len(peers_list) - 1}|".encode("utf-8"))
                     
                     # Se não for o unico par da rede, vai ser o novo ultimo par
                     if(len(peers_list) > 2):
                         old_final_peer_number = len(peers_list) - 2
 
+                        print(f"P{old_final_peer_number};CONNECT_WITH;{peers_list[-1]}|")
                         # Comando para antigo ultimo par, conecte-se com o novo ultimo par
                         clt.send(f"P{old_final_peer_number};CONNECT_WITH;{peers_list[-1]}|".encode("utf-8"))
 
+                        sleep(5)
+
+                        print(f"ID;NEW_ID;{len(peers_list) - 1}|")
                         # Novo ultimo par, esse é seu id
                         clt.send(f"ID;NEW_ID;{len(peers_list) - 1}|".encode("utf-8"))
 
